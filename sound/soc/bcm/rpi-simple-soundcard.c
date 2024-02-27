@@ -337,9 +337,13 @@ static struct snd_rpi_simple_drvdata drvdata_dionaudio_kiwi = {
 	.fixed_bclk_ratio = 64,
 };
 
+// SND_SOC_DAILINK_DEFS(rpi_dac,
+// 	DAILINK_COMP_ARRAY(COMP_EMPTY()),
+// 	DAILINK_COMP_ARRAY(COMP_CODEC("pcm1794a-codec", "pcm1794a-hifi")),
+// 	DAILINK_COMP_ARRAY(COMP_EMPTY()));
 SND_SOC_DAILINK_DEFS(rpi_dac,
 	DAILINK_COMP_ARRAY(COMP_EMPTY()),
-	DAILINK_COMP_ARRAY(COMP_CODEC("pcm1794a-codec", "pcm1794a-hifi")),
+	DAILINK_COMP_ARRAY(COMP_CODEC("max98390.1-0038", "max98390-aif1")),
 	DAILINK_COMP_ARRAY(COMP_EMPTY()));
 
 static struct snd_soc_dai_link snd_rpi_dac_dai[] = {
@@ -432,6 +436,7 @@ static int snd_rpi_simple_probe(struct platform_device *pdev)
 	int ret = 0;
 	const struct of_device_id *of_id;
 
+	pr_err("[MINGU] %s: enter\n", __func__);
 	snd_rpi_simple.dev = &pdev->dev;
 	of_id = of_match_node(snd_rpi_simple_of_match, pdev->dev.of_node);
 

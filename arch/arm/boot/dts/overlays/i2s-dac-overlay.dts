@@ -13,14 +13,23 @@
 	};
 
 	fragment@1 {
-		target-path = "/";
+		target = <&i2c1>;
 		__overlay__ {
-			pcm1794a-codec {
+			#address-cells = <1>;
+			#size-cells = <0>;
+			status = "okay";
+
+			max98390@38 {
 				#sound-dai-cells = <0>;
-				compatible = "ti,pcm1794a";
-				status = "okay";
+				compatible = "maxim,max98390";
+				reg = <0x38>;
+	                     maxim,vmon-slot-no = <0>;
+	                     maxim,imon-slot-no = <1>;
+	                     maxim,interleave-mode = <0>;
+                status = "okay";
 			};
 		};
+
 	};
 
 	fragment@2 {
