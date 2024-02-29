@@ -6,6 +6,9 @@
 #ifndef _MAX98390_H
 #define _MAX98390_H
 
+/* Dummy */
+// #define DUMMY_SOUND_CARD
+
 /* MAX98390 Register Address */
 #define MAX98390_SOFTWARE_RESET 0x2000
 #define MAX98390_INT_RAW1 0x2002

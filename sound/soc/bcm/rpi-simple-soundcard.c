@@ -436,7 +436,7 @@ static int snd_rpi_simple_probe(struct platform_device *pdev)
 	int ret = 0;
 	const struct of_device_id *of_id;
 
-	pr_err("[MINGU] %s: enter\n", __func__);
+	pr_err("[#MINGU#] %s: enter\n", __func__);
 	snd_rpi_simple.dev = &pdev->dev;
 	of_id = of_match_node(snd_rpi_simple_of_match, pdev->dev.of_node);
 

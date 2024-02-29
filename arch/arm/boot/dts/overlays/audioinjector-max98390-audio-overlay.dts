@@ -3,10 +3,10 @@
 /plugin/;
 
 / {
-	compatible = "maxim,max98390";
+	compatible = "brcm,bcm2835";
 
 	fragment@0 {
-		target = <&i2s_clk_consumer>;
+		target = <&i2s_clk_producer>;
 		__overlay__ {
 			status = "okay";
 		};
@@ -26,6 +26,7 @@
 	                     maxim,vmon-slot-no = <0>;
 	                     maxim,imon-slot-no = <1>;
 	                     maxim,interleave-mode = <0>;
+             	status = "okay";
 			};
 		};
 
@@ -34,8 +35,8 @@
 	fragment@2 {
 		target = <&sound>;
 		__overlay__ {
-			compatible = "ai,audioinjector-maxim-soundcard";
-			i2s-controller = <&i2s_clk_consumer>;
+			compatible = "ai,audioinjector-maxim-soundcard"; 
+			i2s-controller = <&i2s_clk_producer>;
 			status = "okay";
 		};
 	};

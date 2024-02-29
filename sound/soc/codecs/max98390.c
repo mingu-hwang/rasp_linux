@@ -290,10 +290,12 @@ static int max98390_set_clock(struct snd_soc_component *component,
 			return -EINVAL;
 		}
 
+		value = 4; // BCLK: 64fs
 		regmap_update_bits(max98390->regmap,
 			MAX98390_PCM_CLK_SETUP,
 			MAX98390_PCM_CLK_SETUP_BSEL_MASK,
 			value);
+		dev_info(component->dev, "[####MINGU####] BCM_BSEL: 0x%x\n", value);
 	}
 	return 0;
 }
@@ -309,6 +311,10 @@ static int max98390_dai_hw_params(struct snd_pcm_substream *substream,
 
 	unsigned int sampling_rate;
 	unsigned int chan_sz;
+	dev_info(component->dev, "%s. width: %d rate: %d\n", 
+		__func__, 
+		snd_pcm_format_width(params_format(params)),
+		params_rate(params));
 
 	/* pcm mode configuration */
 	switch (snd_pcm_format_width(params_format(params))) {
@@ -860,7 +866,7 @@ static void max98390_init_regs(struct snd_soc_component *component)
 	struct max98390_priv *max98390 =
 		snd_soc_component_get_drvdata(component);
 
-	regmap_write(max98390->regmap, MAX98390_CLK_MON, 0x6f);
+	regmap_write(max98390->regmap, MAX98390_CLK_MON, 0x6e);
 	regmap_write(max98390->regmap, MAX98390_DAT_MON, 0x00);
 	regmap_write(max98390->regmap, MAX98390_PWR_GATE_CTL, 0x00);
 	regmap_write(max98390->regmap, MAX98390_PCM_RX_EN_A, 0x03);
@@ -916,6 +922,8 @@ static int max98390_probe(struct snd_soc_component *component)
 	struct max98390_priv *max98390 =
 		snd_soc_component_get_drvdata(component);
 
+	dev_info(component->dev, "[MINGU] %s: enter\n", __func__);
+#if 1
 	regmap_write(max98390->regmap, MAX98390_SOFTWARE_RESET, 0x01);
 	/* Sleep reset settle time */
 	msleep(20);
@@ -940,6 +948,8 @@ static int max98390_probe(struct snd_soc_component *component)
 		regmap_write(max98390->regmap, DSM_TPROT_ROOM_TEMPERATURE_BYTE0,
 			(max98390->ambient_temp_value) & 0x000000ff);
 	}
+#endif
+	dev_info(component->dev, "[MINGU] %s: out\n", __func__);
 
 	return 0;
 }
@@ -1086,6 +1096,7 @@ static int max98390_i2c_probe(struct i2c_client *i2c)
 	}
 
 	/* Check Revision ID */
+#if 1
 	ret = regmap_read(max98390->regmap,
 		MAX98390_R24FF_REV_ID, &reg);
 	if (ret) {
@@ -1095,10 +1106,12 @@ static int max98390_i2c_probe(struct i2c_client *i2c)
 		return ret;
 	}
 	dev_info(&i2c->dev, "MAX98390 revisionID: 0x%02X\n", reg);
-
+#endif
 	ret = devm_snd_soc_register_component(&i2c->dev,
 			&soc_codec_dev_max98390,
 			max98390_dai, ARRAY_SIZE(max98390_dai));
+
+	dev_info(&i2c->dev, "[MINGU] %s: out\n", __func__);
 
 	return ret;
 }
