@@ -30,12 +30,6 @@ static int snd_audioinjector_maxim_soundcard_startup
 {
 	struct snd_soc_pcm_runtime *rtd = substream->private_data;
 
-	pr_info("[MiNGU] %s\n", __func__);
-	// rtd->cpu_dai->driver->playback.channels_min = 2;
-	// rtd->cpu_dai->driver->playback.channels_max = 2;
-	// rtd->cpu_dai->driver->capture.channels_min = 2;
-	// rtd->cpu_dai->driver->capture.channels_max = 2;
-	// rtd->codec_dai->driver->capture.channels_max = 2;
 	asoc_rtd_to_cpu(rtd, 0)->driver->playback.channels_min = 2;
 	asoc_rtd_to_cpu(rtd, 0)->driver->playback.channels_max = 2;
 	asoc_rtd_to_cpu(rtd, 0)->driver->capture.channels_min = 2;
@@ -44,8 +38,9 @@ static int snd_audioinjector_maxim_soundcard_startup
 
 	/* Setup constraints, because there is a 12 MHz XTAL on the board */
 	snd_pcm_hw_constraint_list(substream->runtime, 0,
-				SNDRV_PCM_HW_PARAM_RATE,
-				&bcm2835_constraints_12000000);
+								SNDRV_PCM_HW_PARAM_RATE,
+								&bcm2835_constraints_12000000);
+
 	return 0;
 }
 
@@ -55,35 +50,7 @@ static int snd_audioinjector_maxim_soundcard_hw_params
 	struct snd_soc_pcm_runtime *rtd = substream->private_data;
 	int ret = 0;
 	int sr = params_rate(params);
-
-	pr_info("[MiNGU] %s sample rate = %d\n", __func__, sr);
-
-	// set codec DAI configuration
-	// ret = snd_soc_dai_set_fmt(rtd->codec_dai,
-	// 		SND_SOC_DAIFMT_CBS_CFS|SND_SOC_DAIFMT_I2S|
-	// 		SND_SOC_DAIFMT_NB_NF);
-	ret = snd_soc_dai_set_fmt(asoc_rtd_to_codec(rtd, 0), 
-		SND_SOC_DAIFMT_CBS_CFS|SND_SOC_DAIFMT_I2S|
-		SND_SOC_DAIFMT_NB_NF);
-	if (ret < 0)
-		return ret;
-
-	pr_info("[MiNGU] %s codec ret : %d\n", __func__, ret);
-
-	// set cpu DAI configuration
-	// ret = snd_soc_dai_set_fmt(rtd->cpu_dai,
-	// 		SND_SOC_DAIFMT_CBS_CFS|SND_SOC_DAIFMT_I2S|
-	// 		SND_SOC_DAIFMT_NB_NF);
-	ret = snd_soc_dai_set_fmt(asoc_rtd_to_cpu(rtd, 0),
-			SND_SOC_DAIFMT_CBS_CFS|SND_SOC_DAIFMT_I2S|
-			SND_SOC_DAIFMT_NB_NF);
-	if (ret < 0)
-		return ret;
-
-	pr_info("[MiNGU] %s cpu ret : %d\n", __func__, ret);
-	if (ret < 0)
-		return ret;
-
+	pr_info("[MINGU] %s: samplerate: %d\n", __func__, sr);
 #if 0
 	switch (sr){
 	case 8000:
@@ -112,7 +79,6 @@ static int snd_audioinjector_maxim_soundcard_hw_params
 		break;
 	}
 #endif
-	pr_info("[MiNGU] %s out. ret:%d\n", __func__, ret);
 	return ret;
 }
 
@@ -125,19 +91,19 @@ static struct snd_soc_ops snd_audioinjector_maxim_soundcard_ops = {
 static int audioinjector_maxim_soundcard_dai_init
 	(struct snd_soc_pcm_runtime *rtd)
 {
-	pr_info("[MiNGU] %s\n", __func__);
+	int ret = -1;
+	struct snd_soc_dai *cpu_dai = asoc_rtd_to_cpu(rtd, 0);
+	unsigned int fixed_bclk_ratio = 64; // Fixed bclk ratio (64fs)
 
-	return 0;
+	ret = snd_soc_dai_set_bclk_ratio(cpu_dai, fixed_bclk_ratio);
+	pr_info("[MINGU] %s: fixed_bclk_ratio: %d", __func__, fixed_bclk_ratio);
+	return ret;
 }
 
-// SND_SOC_DAILINK_DEFS(audioinjector_maxim,
-// 	DAILINK_COMP_ARRAY(COMP_CPU("bcm2708-i2s.0")),
-// 	DAILINK_COMP_ARRAY(COMP_CODEC("max98390.1-0038", "max98390-aif1")),
-// 	DAILINK_COMP_ARRAY(COMP_PLATFORM("bcm2835-i2s.0")));
 SND_SOC_DAILINK_DEFS(audioinjector_maxim,
-	DAILINK_COMP_ARRAY(COMP_EMPTY()),
+	DAILINK_COMP_ARRAY(COMP_CPU("bcm2708-i2s.0")),
 	DAILINK_COMP_ARRAY(COMP_CODEC("max98390.1-0038", "max98390-aif1")),
-	DAILINK_COMP_ARRAY(COMP_EMPTY()));
+	DAILINK_COMP_ARRAY(COMP_PLATFORM("bcm2835-i2s.0")));
 
 static struct snd_soc_dai_link audioinjector_maxim_soundcard_dai[] = {
 	{
@@ -180,7 +146,6 @@ static int audioinjector_maxim_soundcard_probe(struct platform_device *pdev)
 	struct snd_soc_card *card = &snd_soc_audioinjector;
 	int ret;
 
-	pr_info("[MiNGU] %s +++ \n", __func__);
 	card->dev = &pdev->dev;
 
 	if (pdev->dev.of_node) {
@@ -191,9 +156,9 @@ static int audioinjector_maxim_soundcard_probe(struct platform_device *pdev)
 					 "i2s-controller", 0);
 
 		if (i2s_node) {
-			// dai->cpus->dai_name = NULL;
+			dai->cpus->dai_name = NULL;
 			dai->cpus->of_node = i2s_node;
-			// dai->platforms->name = NULL;
+			dai->platforms->name = NULL;
 			dai->platforms->of_node = i2s_node;
 		} else
 			if (!dai->cpus->of_node) {
@@ -206,7 +171,6 @@ static int audioinjector_maxim_soundcard_probe(struct platform_device *pdev)
 	if (ret) {
 		dev_err(&pdev->dev, "snd_soc_register_card failed (%d)\n", ret);
 	}
-	pr_info("[MiNGU] %s --- ret : %d\n", __func__, ret);
 	return ret;
 }
 

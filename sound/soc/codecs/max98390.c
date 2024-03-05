@@ -290,12 +290,12 @@ static int max98390_set_clock(struct snd_soc_component *component,
 			return -EINVAL;
 		}
 
-		value = 4; // BCLK: 64fs
+		value = 4; // Fixed bclk ratio (64fs)
 		regmap_update_bits(max98390->regmap,
 			MAX98390_PCM_CLK_SETUP,
 			MAX98390_PCM_CLK_SETUP_BSEL_MASK,
 			value);
-		dev_info(component->dev, "[####MINGU####] BCM_BSEL: 0x%x\n", value);
+		dev_info(component->dev, "[MINGU] %s: BCM_BSEL: 0x%x\n", value);
 	}
 	return 0;
 }

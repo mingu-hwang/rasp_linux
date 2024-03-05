@@ -227,7 +227,6 @@ static int bcm2835_i2s_set_dai_bclk_ratio(struct snd_soc_dai *dai,
 				      unsigned int ratio)
 {
 	struct bcm2835_i2s_dev *dev = snd_soc_dai_get_drvdata(dai);
-	dev_info(dev->dev,"[MINGU] %s: enter.\n", __func__);
 
 	if (!ratio) {
 		dev->tdm_slots = 0;
@@ -242,11 +241,6 @@ static int bcm2835_i2s_set_dai_bclk_ratio(struct snd_soc_dai *dai,
 	dev->tx_mask = 0x03;
 	dev->slot_width = ratio / 2;
 	dev->frame_length = ratio;
-	dev_info(dev->dev,"[MINGU] dev->tdm_slots: %d, rx_mask: 0x%x, tx_mask: 0x%x, dev->slot_width: %d, dev->frame_length: %d\n",
-	 __func__, dev->tdm_slots, dev->rx_mask, dev->tx_mask, dev->slot_width, dev->frame_length);
-
-	dev_info(dev->dev,"[MINGU] %s: exit.\n", __func__);
-
 
 	return 0;
 }
@@ -256,7 +250,6 @@ static int bcm2835_i2s_set_dai_tdm_slot(struct snd_soc_dai *dai,
 	int slots, int width)
 {
 	struct bcm2835_i2s_dev *dev = snd_soc_dai_get_drvdata(dai);
-	dev_info(dev->dev,"[MINGU] %s: enter. slots:%d, width:%d\n", __func__, slots, width);
 
 	if (slots) {
 		if (slots < 0 || width < 0)
@@ -285,7 +278,6 @@ static int bcm2835_i2s_set_dai_tdm_slot(struct snd_soc_dai *dai,
 	dev->slot_width = width;
 	dev->frame_length = slots * width;
 
-	dev_info(dev->dev,"[MINGU] %s: exit.\n", __func__);
 
 	return 0;
 }
@@ -350,7 +342,6 @@ static int bcm2835_i2s_hw_params(struct snd_pcm_substream *substream,
 	bool frame_start_falling_edge = false;
 	uint32_t csreg;
 	int ret = 0;
-	dev_info(dev->dev,"[MINGU] %s: enter\n", __func__);
 
 	/*
 	 * If a stream is already enabled,
@@ -620,7 +611,6 @@ static int bcm2835_i2s_hw_params(struct snd_pcm_substream *substream,
 		!!(mode & BCM2835_I2S_FSI),
 		(mode & BCM2835_I2S_FSI) ? "falling" : "rising");
 
-	dev_info(dev->dev,"[MINGU] %s: exit. ret %d\n", __func__, ret);
 
 	return ret;
 }
@@ -630,7 +620,6 @@ static int bcm2835_i2s_prepare(struct snd_pcm_substream *substream,
 {
 	struct bcm2835_i2s_dev *dev = snd_soc_dai_get_drvdata(dai);
 	uint32_t cs_reg;
-	dev_info(dev->dev,"[MINGU] %s: enter\n", __func__);
 
 	/*
 	 * Clear both FIFOs if the one that should be started
@@ -646,7 +635,6 @@ static int bcm2835_i2s_prepare(struct snd_pcm_substream *substream,
 	else if (substream->stream == SNDRV_PCM_STREAM_CAPTURE
 			&& (cs_reg & BCM2835_I2S_RXD))
 		bcm2835_i2s_clear_fifos(dev, false, true);
-	dev_info(dev->dev,"[MINGU] %s: exit\n", __func__);
 
 	return 0;
 }
@@ -656,7 +644,6 @@ static void bcm2835_i2s_stop(struct bcm2835_i2s_dev *dev,
 		struct snd_soc_dai *dai)
 {
 	uint32_t mask;
-	dev_info(dev->dev,"[MINGU] %s: enter\n", __func__);
 
 	if (substream->stream == SNDRV_PCM_STREAM_CAPTURE)
 		mask = BCM2835_I2S_RXON;
@@ -669,7 +656,6 @@ static void bcm2835_i2s_stop(struct bcm2835_i2s_dev *dev,
 	/* Stop also the clock when not SND_SOC_DAIFMT_CONT */
 	if (!snd_soc_dai_active(dai) && !(dev->fmt & SND_SOC_DAIFMT_CONT))
 		bcm2835_i2s_stop_clock(dev);
-	dev_info(dev->dev,"[MINGU] %s: exit\n", __func__);
 }
 
 static int bcm2835_i2s_trigger(struct snd_pcm_substream *substream, int cmd,
@@ -677,7 +663,6 @@ static int bcm2835_i2s_trigger(struct snd_pcm_substream *substream, int cmd,
 {
 	struct bcm2835_i2s_dev *dev = snd_soc_dai_get_drvdata(dai);
 	uint32_t mask;
-	dev_info(dev->dev,"[MINGU] %s: enter (cmd: 0x%x)\n", __func__, cmd);
 
 	switch (cmd) {
 	case SNDRV_PCM_TRIGGER_START:
@@ -700,10 +685,8 @@ static int bcm2835_i2s_trigger(struct snd_pcm_substream *substream, int cmd,
 		bcm2835_i2s_stop(dev, substream, dai);
 		break;
 	default:
-		dev_err(dev->dev,"[MINGU] %s error (cmd: 0x%x)", cmd);
 		return -EINVAL;
 	}
-	dev_info(dev->dev,"[MINGU] %s: exit\n", __func__);
 
 	return 0;
 }
@@ -712,7 +695,6 @@ static int bcm2835_i2s_startup(struct snd_pcm_substream *substream,
 			       struct snd_soc_dai *dai)
 {
 	struct bcm2835_i2s_dev *dev = snd_soc_dai_get_drvdata(dai);
-	dev_info(dev->dev,"[MINGU] %s: enter\n", __func__);
 
 	if (snd_soc_dai_active(dai))
 		return 0;
@@ -731,7 +713,6 @@ static int bcm2835_i2s_startup(struct snd_pcm_substream *substream,
 	regmap_update_bits(dev->i2s_regmap, BCM2835_I2S_CS_A_REG,
 			BCM2835_I2S_STBY, BCM2835_I2S_STBY);
 
-	dev_info(dev->dev,"[MINGU] %s: exit\n", __func__);
 	return 0;
 }
 
@@ -740,7 +721,6 @@ static void bcm2835_i2s_shutdown(struct snd_pcm_substream *substream,
 {
 	struct bcm2835_i2s_dev *dev = snd_soc_dai_get_drvdata(dai);
 	dev_info(dev->dev,
-		"[MINGU] %s: enter\n",
 		__func__);
 
 	bcm2835_i2s_stop(dev, substream, dai);
@@ -759,7 +739,6 @@ static void bcm2835_i2s_shutdown(struct snd_pcm_substream *substream,
 	 */
 	bcm2835_i2s_stop_clock(dev);
 	dev_info(dev->dev,
-		"[MINGU] %s: exit\n",
 		__func__);
 }
 
@@ -778,7 +757,6 @@ static int bcm2835_i2s_dai_probe(struct snd_soc_dai *dai)
 {
 	struct bcm2835_i2s_dev *dev = snd_soc_dai_get_drvdata(dai);
 	dev_info(dev->dev,
-		"[MINGU] %s: enter\n",
 		__func__);
 
 	snd_soc_dai_init_dma_data(dai,
@@ -786,7 +764,6 @@ static int bcm2835_i2s_dai_probe(struct snd_soc_dai *dai)
 			&dev->dma_data[SNDRV_PCM_STREAM_CAPTURE]);
 
 	dev_info(dev->dev,
-		"[MINGU] %s: out\n",
 		__func__);
 	return 0;
 }
@@ -929,7 +906,6 @@ static int bcm2835_i2s_probe(struct platform_device *pdev)
 	}
 
 	dev_info(dev->dev,
-		"[MINGU] %s: out ret = %d\n",
 		__func__);
 
 	return 0;
